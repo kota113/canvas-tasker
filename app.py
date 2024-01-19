@@ -2,17 +2,22 @@ import random
 import string
 
 import requests
-from flask import Flask, url_for, request, redirect, session
+from flask import Flask, url_for, request, redirect, session, render_template
 import urllib.parse
 import envs
+from google.oauth2 import id_token
+from google.auth.transport import requests as grequests
+import dataset
 
 app = Flask(__name__)
 app.secret_key = envs.SESSION_SECRET
+db = dataset.connect("postgresql://postgres@100.65.209.33:5432/solgtasks")
+users_table = db["users"]
 
 
 @app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
+def index():
+    return render_template("index.html")
 
 
 @app.route('/oauth2')
@@ -22,13 +27,14 @@ def oauth2():
     state = generate_state()
     session["state"] = state
     params = {
-        "scope": "https://www.googleapis.com/auth/tasks",
+        "scope": "https://www.googleapis.com/auth/tasks openid email",
+        # "scope": "https://www.googleapis.com/auth/tasks",
         "access_type": "offline",
         "include_granted_scopes": "true",
+        "prompt": "consent",
         "response_type": "code",
         "state": state,
         "redirect_uri": url_for("callback", _scheme="https", _external=True),
-        # "redirect_uri": "http://localhost:5000/callback",
         "client_id": envs.OAUTH2_CLIENT_ID
     }
     url = base_url + urllib.parse.urlencode(params)
@@ -50,7 +56,71 @@ def callback():
     r = requests.post(url, data=params, headers=headers)
     with open("oauth2_token.json", "w") as f:
         f.write(r.text)
-    return True
+    session["access_token"] = r.json()["access_token"]
+    user_info = decode_id_token(r.json()["id_token"])
+    session["user_id"] = user_info["sub"]
+    users_table.upsert(dict(
+        user_id=user_info["sub"],
+        access_token=r.json()["access_token"],
+        refresh_token=r.json()["refresh_token"],
+        tasklist_id=None
+    ), ["user_id"])
+    return redirect(url_for("index"))
+
+
+@app.route('/api/tasklists', methods=["GET"])
+def get_user_tasklists():
+    if "access_token" not in session:
+        return {"error": "Forbidden"}, 403
+    url = "https://tasks.googleapis.com/tasks/v1/users/@me/lists"
+    params = {"access_token": session["access_token"]}
+    r = requests.get(url, params=params)
+    if "items" not in r.json():
+        return {"error": "Invalid request."}, 401
+    tasklists: list = []
+    if users_table.find_one(user_id=session["user_id"])["tasklist_id"] is None:
+        tasklists: list = [{"title": "SOL 課題 (リストを新規作成)", "id": "createNewList"}]
+    tasklists.extend(r.json()["items"])
+    return tasklists
+
+
+@app.route('/api/set-ical-url', methods=["POST"])
+def set_ical_url():
+    if "access_token" not in session:
+        return {"error": "Forbidden"}, 403
+    if "icalUrl" not in request.get_json():
+        return {"error": "Forbidden"}, 403
+    ical_url = request.get_json()["icalUrl"]
+    users_table.update({"user_id": session["user_id"], "ical_url": ical_url}, ["user_id"])
+    return {"result": "OK"}, 200
+
+
+@app.route('/api/set-tasklist', methods=["POST"])
+def set_tasklist():
+    if "access_token" not in session:
+        return {"error": "Invalid request."}, 403
+    if "tasklist" not in request.get_json():
+        return {"error": "Invalid request."}, 400
+    tasklist_id = request.get_json()["tasklist"]
+    if tasklist_id == "createNewList":
+        url = "https://tasks.googleapis.com/tasks/v1/users/@me/lists"
+        params = {"access_token": session["access_token"]}
+        r = requests.post(url, params=params, json={"title": "SOL 課題"})
+        tasklist_id = r.json()["id"]
+    users_table.update({"user_id": session["user_id"], "tasklist_id": tasklist_id}, ["user_id"])
+    return {"result": "OK"}, 200
+
+
+# decode google open id token
+def decode_id_token(token: str):
+    try:
+        # Specify the CLIENT_ID of the app that accesses the backend:
+        id_info = id_token.verify_oauth2_token(token, grequests.Request(), envs.OAUTH2_CLIENT_ID)
+        # ID token is valid. Get the user's Google Account ID from the decoded token.
+        return id_info
+    except ValueError:
+        # Invalid token
+        return None
 
 
 def generate_state():
