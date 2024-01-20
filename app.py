@@ -1,14 +1,16 @@
 import random
 import string
 import time
+import urllib.parse
 
+import dataset
 import requests
 from flask import Flask, url_for, request, redirect, session, render_template
-import urllib.parse
-import envs
-from google.oauth2 import id_token
 from google.auth.transport import requests as grequests
-import dataset
+from google.oauth2 import id_token
+
+import envs
+import utils
 
 app = Flask(__name__)
 app.secret_key = envs.SESSION_SECRET
@@ -18,6 +20,12 @@ users_table = db["users"]
 
 @app.route('/')
 def index():
+    session["access_token"], session["expiry"] = \
+        utils.validate_token(
+            session["refresh_token"],
+            session["expiry"],
+            session["access_token"]
+        )
     return render_template("index.html")
 
 
@@ -64,14 +72,13 @@ def callback():
         redirect_uri=url_for("callback", _scheme="https", _external=True)
     )
     r = requests.post(url, data=params, headers=headers)
-    with open("oauth2_token.json", "w") as f:
-        f.write(r.text)
-    session["access_token"] = r.json()["access_token"]
     user_info = decode_id_token(r.json()["id_token"])
     if user_info is None:
         return {"error": "Invalid request."}, 401
     session["user_id"] = user_info["sub"]
+    session["access_token"] = r.json()["access_token"]
     expiry = time.time() + r.json()["expires_in"]
+    session["expiry"] = expiry
     if "refresh_token" in r.json():
         refresh_token = r.json()["refresh_token"]
         users_table.upsert(dict(
