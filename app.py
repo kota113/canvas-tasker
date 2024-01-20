@@ -40,7 +40,6 @@ def oauth2():
         "scope": "https://www.googleapis.com/auth/tasks openid",
         # "scope": "https://www.googleapis.com/auth/tasks",
         "access_type": "offline",
-        "include_granted_scopes": "true",
         "prompt": "consent",
         "response_type": "code",
         "state": state,
