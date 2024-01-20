@@ -20,6 +20,11 @@ def index():
     return render_template("index.html")
 
 
+@app.route('/tos')
+def tos():
+    return render_template("tos.html")
+
+
 @app.route('/oauth2')
 def oauth2():
     # google oauth2 request
