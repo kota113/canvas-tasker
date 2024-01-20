@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     li.textContent = item["title"];
     li.id = "tasklist-" + item["id"]
     li.classList.add('py-2', 'px-3', 'text-gray-700', 'hover:bg-gray-100', 'cursor-pointer');
+    if (item["id"] === button.getAttribute('data-selected-id')) {
+      button.textContent = item["title"];
+      li.classList.add('active-tasklist');
+    }
     li.addEventListener('click', function () {
       button.textContent = item["title"];
       li.classList.add('active-tasklist');

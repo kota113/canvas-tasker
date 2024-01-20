@@ -32,7 +32,7 @@
       <!-- form to input ical url -->
       <label for="icalUrlInput" class="block text-md font-medium leading-6 text-gray-900">ical URL</label>
       <div class="relative mt-2 rounded-md shadow-sm">
-        <input type="url" name="ical_url" id="icalUrlInput"
+        <input type="url" name="ical_url" id="icalUrlInput" value="{{ ical_url }}"
                class="block w-full required:border-red-500 rounded-md border-0 py-1.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-800 sm:text-sm sm:leading-6"
                placeholder="URL">
         <div class="absolute inset-y-0 right-0 flex items-center">
@@ -46,7 +46,7 @@
     <div class="max-w-md mx-auto mt-4">
       <label for="icalUrlInput" class="block mt-5 text-md font-medium leading-6 text-gray-900">リストを選択</label>
       <div class="flex relative max-h-50 justify-center max-w-md mx-auto mt-2">
-        <button id="dropdownButton"
+        <button id="dropdownButton" {% if tasklist_id %}data-selected-id="{{ tasklist_id }}" {% else %}data-selected-id="none"{% endif %}
                 class="h-full w-full py-2 px-3 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-inset focus:ring-gray-800 sm:text-sm">
           リストを選択
         </button>

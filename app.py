@@ -21,12 +21,10 @@ users_table = db["users"]
 @app.route('/')
 def index():
     if "user_id" in session:
-        session["access_token"], session["expiry"] = \
-            utils.validate_token(
-                session["refresh_token"],
-                session["expiry"],
-                session["access_token"]
-            )
+        user_row = users_table.find_one(user_id=session["user_id"])
+        ical_url = user_row["ical_url"] if user_row["ical_url"] else ""
+        tasklist_id = user_row["tasklist_id"] if user_row["tasklist_id"] else None
+        return render_template("index.html", ical_url=ical_url, tasklist_id=tasklist_id)
     return render_template("index.html")
 
 
@@ -63,6 +61,8 @@ def oauth2():
 @app.route('/callback')
 def callback():
     args = request.args
+    if args.get("state") != session.get("state"):
+        return {"error": "Invalid request."}, 401
     url = "https://oauth2.googleapis.com/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     params = dict(
@@ -89,7 +89,7 @@ def callback():
             expiry=expiry
         ), ["user_id"])
     else:
-        users_table.upsert(dict(
+        users_table.update(dict(
             user_id=user_info["sub"],
             access_token=r.json()["access_token"],
             expiry=expiry
@@ -142,14 +142,10 @@ def set_tasklist():
 
 # decode google open id token
 def decode_id_token(token: str):
-    try:
-        # Specify the CLIENT_ID of the app that accesses the backend:
-        id_info = id_token.verify_oauth2_token(token, grequests.Request(), envs.OAUTH2_CLIENT_ID)
-        # ID token is valid. Get the user's Google Account ID from the decoded token.
-        return id_info
-    except ValueError:
-        # Invalid token
-        return None
+    # Specify the CLIENT_ID of the app that accesses the backend:
+    id_info = id_token.verify_oauth2_token(token, grequests.Request(), envs.OAUTH2_CLIENT_ID)
+    # ID token is valid. Get the user's Google Account ID from the decoded token.
+    return id_info
 
 
 @app.route('/logout')
