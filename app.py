@@ -24,6 +24,10 @@ def index():
 def tos():
     return render_template("tos.html")
 
+@app.route('/privacy-policy')
+def privacy_policy():
+    return render_template("privacy-policy.html")
+
 
 @app.route('/oauth2')
 def oauth2():
