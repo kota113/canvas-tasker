@@ -60,7 +60,7 @@ def add_events_to_tasks(access_token, events, task_list_id):
 
 def main():
     for user_row in users_table.find():
-        user_id = user_row["id"]
+        user_id = user_row["user_id"]
         access_token = utils.validate_token(
             user_row["refresh_token"],
             user_row["access_token"],
