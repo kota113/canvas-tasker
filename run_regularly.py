@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+import datetime
 
 import dataset
 import requests
@@ -26,36 +26,64 @@ def parse_ical(ical_string):
             description = str(component.get('description'))
             dtstart = component.get('dtstart').dt
 
-            # Format datetime objects for readability
-            if isinstance(dtstart, datetime):
-                dtstart = dtstart.strftime('%Y-%m-%d %H:%M:%S')
-            else:
-                dtstart = dtstart.strftime('%Y-%m-%d')
-
             events.append({'title': summary, 'desc': description, 'start_time': dtstart})
 
     return events
 
 
-def add_events_to_tasks(access_token, events, task_list_id):
+def add_events_to_tasks(access_token, events, tasklist_id):
     for event in events:
         title = event['title']
         description = event['desc']
         start_time = event['start_time']
+        # ignore already ended events
+        if isinstance(start_time, datetime.datetime):
+            # set tzinfo to UTC
+            start_time = start_time.replace(tzinfo=datetime.timezone.utc)
+            if start_time < datetime.datetime.now(datetime.timezone.utc):
+                continue
+
+        elif isinstance(start_time, datetime.date) and start_time < datetime.datetime.today().date():
+            continue
 
         # Add event to tasks
-        url = f"https://www.googleapis.com/tasks/v1/lists/{task_list_id}/tasks"
+        url = f"https://www.googleapis.com/tasks/v1/lists/{tasklist_id}/tasks"
+        # add time if it's date
+        if isinstance(start_time, datetime.date):
+            start_time = datetime.datetime.combine(start_time, datetime.datetime.min.time())
         headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}"
+            "Content-Type": "application/json"
         }
+        params = {
+            "access_token": "ya29.a0AfB_byBfn8XA0gRRSfV1fzJonmYbY2DC7FIQTXrfyttxR_GE8X7T-BuRX189u12cXEERM8KxjBCux1MpCKEI1vjwod8W3ROuc5vGJtcjoV1Qw42RzWP-Fc2LtW8jTz3eTF-xhWrWyiz-OCTyqoYJpZyYhBEc7sCq8AaCgYKAQgSARMSFQHGX2MiOqYu2uZ4_WfQ9WaJUb_AZA0169"
+        }
+
         body = {
             "title": title,
             "notes": description,
-            "due": start_time
+            "due": start_time.isoformat()+"Z"
         }
-        response = requests.post(url, headers=headers, json=body)
+        print(start_time.isoformat())
+        response = requests.post(url, headers=headers, json=body, params=params)
+        print(response.text)
         response.raise_for_status()
+
+
+def retrieve_existing_tasks(access_token, tasklist_id):
+    url = f"https://www.googleapis.com/tasks/v1/lists/{tasklist_id}/tasks"
+    headers = {
+        "Content-Type": "application/json",
+    }
+    params = {
+        "access_token": {access_token},
+        "showCompleted": "true",
+        "showHidden": "true",
+        "dueMin": datetime.datetime.now().strftime('%Y-%m-%d'),
+        "maxResults": 100
+    }
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+    return response.json()
 
 
 def main():
@@ -66,11 +94,11 @@ def main():
             user_row["access_token"],
             user_row["expiry"]
         )
-        task_list_id = user_row["tasklist_id"]
+        tasklist_id = user_row["tasklist_id"]
         ical_url = user_row["ical_url"]
         data = fetch_ical_data(ical_url)
         events = parse_ical(data)
-        add_events_to_tasks(access_token, events, task_list_id)
+        add_events_to_tasks(access_token, events, tasklist_id)
         print(f"Added {len(events)} events to {user_id}'s task list")
 
 
