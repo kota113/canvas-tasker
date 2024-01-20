@@ -4,3 +4,4 @@ google-auth==2.26.2
 mysqlclient==2.2.1
 dataset==1.6.2
 gunicorn==21.2.0
+python-dotenv==1.0.0
