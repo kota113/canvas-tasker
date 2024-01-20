@@ -1,8 +1,11 @@
 import time
+from datetime import datetime
+
 import dataset
 import requests
 from icalendar import Calendar
-from datetime import datetime, timedelta
+
+import utils
 
 db = dataset.connect("mysql://prod@100.65.209.33/prod", engine_kwargs={"pool_recycle": 3600})
 users_table = db["users"]
@@ -58,7 +61,11 @@ def add_events_to_tasks(access_token, events, task_list_id):
 def main():
     for user_row in users_table.find():
         user_id = user_row["id"]
-        access_token = user_row["access_token"]
+        access_token = utils.validate_token(
+            user_row["refresh_token"],
+            user_row["access_token"],
+            user_row["expiry"]
+        )
         task_list_id = user_row["task_list_id"]
         ical_url = user_row["ical_url"]
         data = fetch_ical_data(ical_url)
@@ -67,9 +74,7 @@ def main():
         print(f"Added {len(events)} events to {user_id}'s task list")
 
 
-while True:
-
-    if __name__ == '__main__':
+if __name__ == '__main__':
+    while True:
         main()
-
-    time.sleep(60)
+        time.sleep(60)
