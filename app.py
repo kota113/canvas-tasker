@@ -20,12 +20,13 @@ users_table = db["users"]
 
 @app.route('/')
 def index():
-    session["access_token"], session["expiry"] = \
-        utils.validate_token(
-            session["refresh_token"],
-            session["expiry"],
-            session["access_token"]
-        )
+    if "user_id" in session:
+        session["access_token"], session["expiry"] = \
+            utils.validate_token(
+                session["refresh_token"],
+                session["expiry"],
+                session["access_token"]
+            )
     return render_template("index.html")
 
 
@@ -149,6 +150,19 @@ def decode_id_token(token: str):
     except ValueError:
         # Invalid token
         return None
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
+
+
+# logout on error
+@app.errorhandler(500)
+def logout_on_error(e):
+    session.clear()
+    return redirect(url_for("index"))
 
 
 def generate_state():
