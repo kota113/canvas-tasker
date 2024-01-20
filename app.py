@@ -1,5 +1,6 @@
 import random
 import string
+import time
 
 import requests
 from flask import Flask, url_for, request, redirect, session, render_template
@@ -40,7 +41,7 @@ def oauth2():
         "scope": "https://www.googleapis.com/auth/tasks openid",
         # "scope": "https://www.googleapis.com/auth/tasks",
         "access_type": "offline",
-        "prompt": "consent",
+        # "prompt": "consent",
         "response_type": "code",
         "state": state,
         "redirect_uri": url_for("callback", _scheme="https", _external=True),
@@ -70,12 +71,21 @@ def callback():
     if user_info is None:
         return {"error": "Invalid request."}, 401
     session["user_id"] = user_info["sub"]
-    users_table.upsert(dict(
-        user_id=user_info["sub"],
-        access_token=r.json()["access_token"],
-        refresh_token=r.json()["refresh_token"],
-        tasklist_id=None
-    ), ["user_id"])
+    expiry = time.time() + r.json()["expires_in"]
+    if "refresh_token" in r.json():
+        refresh_token = r.json()["refresh_token"]
+        users_table.upsert(dict(
+            user_id=user_info["sub"],
+            access_token=r.json()["access_token"],
+            refresh_token=refresh_token,
+            expiry=expiry
+        ), ["user_id"])
+    else:
+        users_table.upsert(dict(
+            user_id=user_info["sub"],
+            access_token=r.json()["access_token"],
+            expiry=expiry
+        ), ["user_id"])
     return redirect(url_for("index"))
 
 
