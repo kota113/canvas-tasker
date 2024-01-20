@@ -66,7 +66,7 @@ def main():
             user_row["access_token"],
             user_row["expiry"]
         )
-        task_list_id = user_row["task_list_id"]
+        task_list_id = user_row["tasklist_id"]
         ical_url = user_row["ical_url"]
         data = fetch_ical_data(ical_url)
         events = parse_ical(data)
