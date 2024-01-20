@@ -1,5 +1,6 @@
 Flask==3.0.0
 requests==2.31.0
 google-auth==2.26.2
-psycopg2==2.9.9
+mysqlclient==2.2.1
 dataset==1.6.2
+gunicorn==21.2.0
