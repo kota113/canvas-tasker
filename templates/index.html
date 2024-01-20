@@ -46,7 +46,8 @@
     <div class="max-w-md mx-auto mt-4">
       <label for="icalUrlInput" class="block mt-5 text-md font-medium leading-6 text-gray-900">リストを選択</label>
       <div class="flex relative max-h-50 justify-center max-w-md mx-auto mt-2">
-        <button id="dropdownButton" {% if tasklist_id %}data-selected-id="{{ tasklist_id }}" {% else %}data-selected-id="none"{% endif %}
+        <button id="dropdownButton" {% if tasklist_id %}data-selected-id="{{ tasklist_id }}"
+                {% else %}data-selected-id="none"{% endif %}
                 class="h-full w-full py-2 px-3 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-inset focus:ring-gray-800 sm:text-sm">
           リストを選択
         </button>
@@ -62,6 +63,20 @@
         </div>
       </div>
     </div>
+    {% if ical_url and tasklist_id %}
+      <div class="flex items-center mt-10 max-w-md p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-100"
+           role="alert">
+        <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+             fill="currentColor" viewBox="0 0 20 20">
+          <path
+              d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"></path>
+        </svg>
+        <span class="sr-only">Info</span>
+        <div>
+          <span class="font-medium mr-3">既に設定済みです</span>リスト等の変更ができます。
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
 </div>
 <!-- link to tos and privacy policy on footer -->
@@ -71,5 +86,6 @@
   <a href="/privacy-policy">プライバシーポリシー (Privacy Policy)</a>
 </footer>
 <script src="/static/js/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
