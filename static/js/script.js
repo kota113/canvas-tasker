@@ -23,6 +23,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             button.textContent = item["title"];
             li.classList.add('active-tasklist');
             dropdown.classList.add('hidden');
+            for (const other of dropdown.children) {
+                if (other !== li) {
+                    other.classList.remove('active-tasklist');
+                }
+            }
         });
         dropdown.appendChild(li);
     }
