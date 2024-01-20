@@ -24,6 +24,7 @@ def index():
 def tos():
     return render_template("tos.html")
 
+
 @app.route('/privacy-policy')
 def privacy_policy():
     return render_template("privacy-policy.html")
@@ -36,7 +37,7 @@ def oauth2():
     state = generate_state()
     session["state"] = state
     params = {
-        "scope": "https://www.googleapis.com/auth/tasks openid email",
+        "scope": "https://www.googleapis.com/auth/tasks openid",
         # "scope": "https://www.googleapis.com/auth/tasks",
         "access_type": "offline",
         "include_granted_scopes": "true",
