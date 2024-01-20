@@ -45,16 +45,16 @@ def add_events_to_tasks(access_token, events, task_list_id):
 
         # Add event to tasks
         url = f"https://www.googleapis.com/tasks/v1/lists/{task_list_id}/tasks"
-        headers = {"Content-Type": "application/json"}
-        params = {
-            "access_token": access_token
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
         }
         body = {
             "title": title,
             "notes": description,
             "due": start_time
         }
-        response = requests.post(url, headers=headers, params=params, json=body)
+        response = requests.post(url, headers=headers, json=body)
         response.raise_for_status()
 
 
