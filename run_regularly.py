@@ -32,8 +32,13 @@ def parse_ical(ical_string):
 
 
 def add_events_to_tasks(access_token, events, tasklist_id):
+    existing_tasks = retrieve_existing_tasks(access_token, tasklist_id)
+    existing_tasks_titles = [task["title"] for task in existing_tasks]
     for event in events:
         title = event['title']
+        if title in existing_tasks_titles:
+            # todo: update task instead of skipping
+            continue
         description = event['desc']
         start_time = event['start_time']
         # ignore already ended events
@@ -55,7 +60,7 @@ def add_events_to_tasks(access_token, events, tasklist_id):
             "Content-Type": "application/json"
         }
         params = {
-            "access_token": "ya29.a0AfB_byBfn8XA0gRRSfV1fzJonmYbY2DC7FIQTXrfyttxR_GE8X7T-BuRX189u12cXEERM8KxjBCux1MpCKEI1vjwod8W3ROuc5vGJtcjoV1Qw42RzWP-Fc2LtW8jTz3eTF-xhWrWyiz-OCTyqoYJpZyYhBEc7sCq8AaCgYKAQgSARMSFQHGX2MiOqYu2uZ4_WfQ9WaJUb_AZA0169"
+            "access_token": access_token
         }
 
         body = {
@@ -83,7 +88,7 @@ def retrieve_existing_tasks(access_token, tasklist_id):
     }
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
-    return response.json()
+    return response.json()["items"]
 
 
 def main():
