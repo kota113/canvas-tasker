@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', async function () {
   const response = await fetch('/api/tasklists');
   if (!response.ok) {
-    window.location.href = '/oauth2';
+    console.log("not logged in");
+    return;
   }
   const tasklists = await response.json();
   const dropdown = document.getElementById('dropdown');

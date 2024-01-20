@@ -11,7 +11,7 @@ import dataset
 
 app = Flask(__name__)
 app.secret_key = envs.SESSION_SECRET
-db = dataset.connect("postgresql://postgres@100.65.209.33:5432/solgtasks")
+db = dataset.connect("mysql://prod@100.65.209.33/prod", engine_kwargs={"pool_recycle": 3600})
 users_table = db["users"]
 
 
@@ -58,6 +58,8 @@ def callback():
         f.write(r.text)
     session["access_token"] = r.json()["access_token"]
     user_info = decode_id_token(r.json()["id_token"])
+    if user_info is None:
+        return {"error": "Invalid request."}, 401
     session["user_id"] = user_info["sub"]
     users_table.upsert(dict(
         user_id=user_info["sub"],
