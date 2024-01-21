@@ -1,15 +1,26 @@
-import time
 import datetime
+import time
 
 import dataset
 import requests
 from icalendar import Calendar
 
+import sentry_sdk
 import utils
 
 db = dataset.connect("mysql://prod@100.65.209.33/prod", engine_kwargs={"pool_recycle": 3600})
 users_table = db["users"]
 
+sentry_sdk.init(
+    dsn="https://ea04c692eefc0400d68fd41adf0b7779@o476618.ingest.sentry.io/4506608188325888",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
 
 def fetch_ical_data(url):
     response = requests.get(url)
@@ -95,7 +106,8 @@ def main():
             user_id = user_row["user_id"]
             access_token, expiry = utils.validate_token(
                 user_row["refresh_token"],
-                user_row["access_token"]
+                user_row["access_token"],
+                user_row["expiry"]
             )
             tasklist_id = user_row["tasklist_id"]
             ical_url = user_row["ical_url"]
