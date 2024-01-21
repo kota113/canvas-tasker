@@ -14,7 +14,7 @@ def validate_token(refresh_token: str, access_token: str, expiry: int = None):
         url = "https://www.googleapis.com/oauth2/v3/tokeninfo"
         params = {"access_token": access_token}
         r = requests.get(url, params=params)
-        if r.status_code != 200 or r.json()["expires_in"] < 60:
+        if r.status_code != 200 or int(r.json()["expires_in"]) < 60:
             access_token, expiry = fetch_new_token(refresh_token)
     return access_token, expiry
 

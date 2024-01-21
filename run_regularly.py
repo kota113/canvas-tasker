@@ -68,9 +68,7 @@ def add_events_to_tasks(access_token, events, tasklist_id):
             "notes": description,
             "due": start_time.isoformat()+"Z"
         }
-        print(start_time.isoformat())
         response = requests.post(url, headers=headers, json=body, params=params)
-        print(response.text)
         response.raise_for_status()
 
 
@@ -83,7 +81,7 @@ def retrieve_existing_tasks(access_token, tasklist_id):
         "access_token": {access_token},
         "showCompleted": "true",
         "showHidden": "true",
-        "dueMin": datetime.datetime.now().strftime('%Y-%m-%d'),
+        "dueMin": datetime.datetime.now().isoformat() + "Z",
         "maxResults": 100
     }
     response = requests.get(url, headers=headers, params=params)
@@ -93,18 +91,20 @@ def retrieve_existing_tasks(access_token, tasklist_id):
 
 def main():
     for user_row in users_table.find():
-        user_id = user_row["user_id"]
-        access_token = utils.validate_token(
-            user_row["refresh_token"],
-            user_row["access_token"],
-            user_row["expiry"]
-        )
-        tasklist_id = user_row["tasklist_id"]
-        ical_url = user_row["ical_url"]
-        data = fetch_ical_data(ical_url)
-        events = parse_ical(data)
-        add_events_to_tasks(access_token, events, tasklist_id)
-        print(f"Added {len(events)} events to {user_id}'s task list")
+        try:
+            user_id = user_row["user_id"]
+            access_token, expiry = utils.validate_token(
+                user_row["refresh_token"],
+                user_row["access_token"]
+            )
+            tasklist_id = user_row["tasklist_id"]
+            ical_url = user_row["ical_url"]
+            data = fetch_ical_data(ical_url)
+            events = parse_ical(data)
+            add_events_to_tasks(access_token, events, tasklist_id)
+            print(f"Added {len(events)} events to {user_id}'s task list")
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
