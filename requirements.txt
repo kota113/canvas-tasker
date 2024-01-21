@@ -6,4 +6,4 @@ dataset==1.6.2
 gunicorn==21.2.0
 python-dotenv==1.0.0
 icalendar==5.0.11
-sentry_sdk==1.39.2
+sentry_sdk[flask]==1.39.2
