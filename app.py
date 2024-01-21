@@ -12,6 +12,8 @@ from google.oauth2 import id_token
 import envs
 import sentry_sdk
 
+import utils
+
 app = Flask(__name__)
 app.secret_key = envs.SESSION_SECRET
 db = dataset.connect("mysql://prod@100.65.209.33/prod", engine_kwargs={"pool_recycle": 3600})
@@ -116,7 +118,13 @@ def get_user_tasklists():
     params = {"access_token": session["access_token"]}
     r = requests.get(url, params=params)
     if "items" not in r.json():
-        return {"error": "Invalid request."}, 401
+        refresh_token = users_table.find_one(user_id=session["user_id"])["refresh_token"]
+        session["access_token"], session["expiry"] = utils.validate_token(
+            refresh_token, session["access_token"]
+        )
+        r = requests.get(url, params={"access_token": session["access_token"]})
+        if "items" not in r.json():
+            return {"error": "Forbidden"}, 403
     tasklists: list = []
     if users_table.find_one(user_id=session["user_id"])["tasklist_id"] is None:
         tasklists: list = [{"title": "SOL 課題 (リストを新規作成)", "id": "createNewList"}]

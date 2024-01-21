@@ -7,7 +7,7 @@ def validate_token(refresh_token: str, access_token: str, expiry: int = None):
     if access_token is None and expiry is None:
         raise ValueError("Either access_token or expiry must be specified.")
     if expiry:
-        if time.time() > expiry - 60:
+        if time.time() > expiry - 120:
             access_token, expiry = fetch_new_token(refresh_token)
             return access_token, expiry
     else:
