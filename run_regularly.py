@@ -22,6 +22,7 @@ sentry_sdk.init(
     profiles_sample_rate=1.0,
 )
 
+
 def fetch_ical_data(url):
     response = requests.get(url)
     response.raise_for_status()
@@ -77,7 +78,7 @@ def add_events_to_tasks(access_token, events, tasklist_id):
         body = {
             "title": title,
             "notes": description,
-            "due": start_time.isoformat()+"Z"
+            "due": start_time.isoformat() + "Z"
         }
         response = requests.post(url, headers=headers, json=body, params=params)
         response.raise_for_status()
