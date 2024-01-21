@@ -20,18 +20,21 @@
     <i class="fa-solid fa-arrow-right mx-2" style="height: 0.9em; width: 0.9em"></i>
     <img alt="icon of Google Tasks" src="/static/img/Google_Tasks_2021.svg" style="height: 0.9em">
   </div>
+  <div class="flex justify-center mt-5">
+    <p class="text-gray-500">Canvasの課題をGoogle Tasksに同期して、課題を管理しやすくします。</p>
+  </div>
   {% if "access_token" not in session %}
-    <div class="flex justify-center mt-8">
+    <div class="flex justify-center mt-5">
       <button onclick="window.location = '{{ url_for("oauth2") }}'"
               class="h-12 min-w-[8rem] p-2 rounded-lg border-2 border-blue-500 bg-blue-500 font-bold text-blue-50 shadow-lg hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-600">
         <i class="fa-brands fa-google mr-1"></i>Login with Google
       </button>
     </div>
   {% else %}
-    <div class="max-w-md mx-auto mt-8">
+    <div class="max-w-md mx-auto mt-5">
       <!-- form to input ical url -->
       <label for="icalUrlInput" class="block text-md font-medium leading-6 text-gray-900">
-        ical URL <a href="https://community.canvaslms.com/t5/Student-Guide/How-do-I-view-the-Calendar-iCal-feed-to-subscribe-to-an-external/ta-p/331" target="_blank" rel="noopener noreferrer"><i class="ml-1 fa-solid fa-question-circle"></i></a>
+        ical URL <a href="https://community-canvaslms-com.translate.goog/t5/Student-Guide/How-do-I-view-the-Calendar-iCal-feed-to-subscribe-to-an-external/ta-p/331?_x_tr_sl=en&_x_tr_tl=ja&_x_tr_hl=en&_x_tr_pto=wapp" target="_blank" rel="noopener noreferrer"><i class="ml-1 fa-solid fa-question-circle"></i></a>
       </label>
       <div class="relative mt-2 rounded-md shadow-sm">
         <input type="url" name="ical_url" id="icalUrlInput" value="{{ ical_url }}"
