@@ -107,8 +107,7 @@ def main():
             user_id = user_row["user_id"]
             access_token, expiry = utils.validate_token(
                 user_row["refresh_token"],
-                user_row["access_token"],
-                user_row["expiry"]
+                user_row["access_token"]
             )
             tasklist_id = user_row["tasklist_id"]
             ical_url = user_row["ical_url"]
