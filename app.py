@@ -10,12 +10,23 @@ from google.auth.transport import requests as grequests
 from google.oauth2 import id_token
 
 import envs
-import utils
+import sentry_sdk
 
 app = Flask(__name__)
 app.secret_key = envs.SESSION_SECRET
 db = dataset.connect("mysql://prod@100.65.209.33/prod", engine_kwargs={"pool_recycle": 3600})
 users_table = db["users"]
+
+sentry_sdk.init(
+    dsn="https://5c25d5196d1f4feb231cc8c72c160fad@o476618.ingest.sentry.io/4506608200712192",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
 
 
 @app.route('/')
