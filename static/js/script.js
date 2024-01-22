@@ -86,6 +86,6 @@ document.getElementById("icalUrlSubmitBtn").addEventListener("click", async func
     }
 })
 
-document.getElementById("icalUrlInput").addEventListener("change", function () {
+document.getElementById("icalUrlInput").addEventListener("focus", function () {
     document.getElementById("icalUrlSubmitBtn").disabled = false;
 })
