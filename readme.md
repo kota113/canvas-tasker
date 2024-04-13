@@ -4,4 +4,3 @@ If you have any inquiry about your data, please contact [kota113@keio.jp](mailto
 ## How to use?
 ## Development
 If you found any bugs or suggestions, create a new issue to let me know.  
-Joining the development by creating PR is also welcomed!
